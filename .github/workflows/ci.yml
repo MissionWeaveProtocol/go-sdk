@@ -48,3 +48,9 @@ jobs:
 
       - name: Build
         run: go build ./...
+
+      - name: Smoke-test embedded protocol bundle
+        run: |
+          go build -o "${RUNNER_TEMP}/bundle-smoke" ./internal/cmd/bundle-smoke
+          cd "${RUNNER_TEMP}"
+          ./bundle-smoke
