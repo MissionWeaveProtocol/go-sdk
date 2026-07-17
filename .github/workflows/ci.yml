@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify Go SDK
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Verify module files
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+
+      - name: Check canonical naming
+        run: go run ./internal/cmd/repository-policy
+
+      - name: Check formatting
+        run: |
+          unformatted="$(gofmt -l .)"
+          test -z "${unformatted}" || {
+            printf 'Files require gofmt:\n%s\n' "${unformatted}"
+            exit 1
+          }
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test -race -cover ./...
+
+      - name: Build
+        run: go build ./...
