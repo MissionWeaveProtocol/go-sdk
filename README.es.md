@@ -16,8 +16,8 @@ MissionWeaveProtocol Go SDK ofrece bindings de Go basados primero en schemas par
 [MissionWeaveProtocol](https://github.com/missionweaveprotocol/missionweaveprotocol) 0.1. El Go
 module es `github.com/missionweaveprotocol/go-sdk` y su package raíz es `missionweaveprotocol`.
 
-Esta versión demuestra únicamente **schema-and-vector conformance**. No afirma behavioral
-conformance para un authoritative Core, Agent runtime, Worker Scheduler, Group gateway,
+Esta versión demuestra únicamente **conformidad con esquemas y vectores**. No afirma conformidad de
+comportamiento para un Core autoritativo, Agent runtime, Worker Scheduler, Group gateway,
 persistencia ni para la máquina de estados completa de Mission/WorkItem.
 
 ## Compatibilidad del protocolo
