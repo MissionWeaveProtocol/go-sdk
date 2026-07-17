@@ -46,6 +46,11 @@ jobs:
       - name: Test
         run: go test -race -cover ./...
 
+      - name: Run conformance suite
+        run: |
+          go run ./cmd/missionweaveprotocol-conformance
+          go run ./cmd/missionweaveprotocol-conformance --root .
+
       - name: Build
         run: go build ./...
 
