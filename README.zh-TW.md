@@ -18,7 +18,7 @@ schema-first Go bindings。Go module 為 `github.com/missionweaveprotocol/go-sdk
 為 `missionweaveprotocol`。
 
 本版本僅證明 **schema-and-vector conformance**。它不宣稱 authoritative Core、Agent
-runtime、Worker Scheduler、Group gateway、持久化或完整 Mission/WorkItem 狀態機的
+runtime、Worker Scheduler、Group gateway、持久化或完整的 Mission/工作項狀態機的
 behavioral conformance。
 
 ## 協定相容性
