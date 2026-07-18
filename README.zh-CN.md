@@ -40,12 +40,12 @@ go get github.com/missionweaveprotocol/go-sdk@latest
 
 ## 已包含的能力
 
-- 按原始字节嵌入的 protocol pin、21 个 Draft 2020-12 schema 和 43 个 conformance vector；
+- 按原始字节嵌入的 protocol pin、21 个 Draft 2020-12 schema 和 52 个 conformance vector；
 - 验证 schema、conformance 和组合 bundle digest；
 - 严格的 UTF-8 JSON 解析，并递归拒绝重复 member；
 - 离线 `$id` schema 解析、format assertion 和 ECMAScript 兼容 pattern；
 - 使用 embedded 或调用方提供的 `fs.FS` 的 `SchemaCatalog`；
-- 43-vector conformance runner 和 `missionweaveprotocol-conformance` 命令；
+- 52-vector conformance runner 和 `missionweaveprotocol-conformance` 命令；
 - RFC 8785 JSON canonicalization 和 `sha256:` content identifier；
 - 使用无 padding base64url 值的 Ed25519 签名和验证；
 - 签名 payload 仅排除顶层 `signature` member；
@@ -131,7 +131,7 @@ go run github.com/missionweaveprotocol/go-sdk/cmd/missionweaveprotocol-conforman
 go run ./cmd/missionweaveprotocol-conformance --root ../missionweaveprotocol
 ```
 
-成功时会报告 `43/43 conformance vectors passed`。如果 validity 不匹配、vector 格式错误、
+成功时会报告 `52/52 conformance vectors passed`。如果 validity 不匹配、vector 格式错误、
 资源缺失或 schema 编译失败，命令将以非零状态退出。
 
 ## 示例和开发

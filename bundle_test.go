@@ -35,8 +35,8 @@ func TestEmbeddedProtocolBundleMatchesPin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if JSONFiles != 66 { // 65 protocol artifacts plus PROTOCOL_PIN.json.
-		t.Fatalf("expected 66 embedded JSON files, got %d", JSONFiles)
+	if JSONFiles != 75 { // 74 protocol artifacts plus PROTOCOL_PIN.json.
+		t.Fatalf("expected 75 embedded JSON files, got %d", JSONFiles)
 	}
 }
 

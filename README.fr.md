@@ -41,12 +41,12 @@ go get github.com/missionweaveprotocol/go-sdk@latest
 
 ## Capacités incluses
 
-- protocol pin byte-exact, 21 schemas Draft 2020-12 et 43 conformance vectors embarqués ;
+- protocol pin byte-exact, 21 schemas Draft 2020-12 et 52 conformance vectors embarqués ;
 - vérification des digest de schemas, de conformance et du bundle combiné ;
 - parsing JSON UTF-8 strict avec rejet récursif des members dupliqués ;
 - résolution offline par `$id`, format assertions et patterns compatibles ECMAScript ;
 - `SchemaCatalog` basé sur le `fs.FS` embarqué ou fourni par l'appelant ;
-- runner de 43 vectors et commande `missionweaveprotocol-conformance` ;
+- runner de 52 vectors et commande `missionweaveprotocol-conformance` ;
 - canonicalization JSON RFC 8785 et identifiants `sha256:` ;
 - signature et vérification Ed25519 en base64url sans padding ;
 - payload de signature excluant uniquement le member `signature` de premier niveau ;
@@ -135,7 +135,7 @@ Avec un protocol checkout ou release bundle :
 go run ./cmd/missionweaveprotocol-conformance --root ../missionweaveprotocol
 ```
 
-En cas de succès, la commande affiche `43/43 conformance vectors passed`. Elle retourne un état non
+En cas de succès, la commande affiche `52/52 conformance vectors passed`. Elle retourne un état non
 nul en cas de validity mismatch, de vector malformé, de ressource manquante ou d'erreur de
 compilation de schema.
 
