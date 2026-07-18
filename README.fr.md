@@ -12,9 +12,9 @@
   <strong><a href="https://missionweaveprotocol.github.io/">Site officiel et documentation</a></strong>
 </p>
 
-Le MissionWeaveProtocol Go SDK fournit des bindings Go schema-first pour
+Le SDK Go MissionWeaveProtocol fournit des bindings Go centrés sur les schémas pour
 [MissionWeaveProtocol](https://github.com/missionweaveprotocol/missionweaveprotocol) 0.1. Le Go
-module est `github.com/missionweaveprotocol/go-sdk` et son package racine est
+module est `github.com/missionweaveprotocol/go-sdk` et son paquet racine est
 `missionweaveprotocol`.
 
 Cette version démontre uniquement une **conformité limitée aux schémas et aux vecteurs**. Elle ne
@@ -41,9 +41,9 @@ go get github.com/missionweaveprotocol/go-sdk@latest
 
 ## Capacités incluses
 
-- protocol pin byte-exact, 21 schemas Draft 2020-12 et 52 conformance vectors embarqués ;
-- vérification des digest de schemas, de conformance et du bundle combiné ;
-- parsing JSON UTF-8 strict avec rejet récursif des members dupliqués ;
+- verrouillage du protocole exact à l’octet, 21 schémas Draft 2020-12 et 52 vecteurs de conformité embarqués ;
+- vérification des empreintes des schémas, des vecteurs de conformité et du bundle combiné ;
+- analyse JSON UTF-8 stricte avec rejet récursif des membres dupliqués ;
 - résolution offline par `$id`, format assertions et patterns compatibles ECMAScript ;
 - `SchemaCatalog` basé sur le `fs.FS` embarqué ou fourni par l'appelant ;
 - runner de 52 vectors et commande `missionweaveprotocol-conformance` ;
@@ -79,8 +79,8 @@ if err := catalog.Validate("command.schema.json", commandJSON); err != nil {
 }
 ```
 
-`NewSchemaCatalog(source fs.FS)` fournit la même Interface pour un protocol checkout ou release
-bundle décompressé. Tous les schemas sont enregistrés par `$id` avant compilation ; les références
+`NewSchemaCatalog(source fs.FS)` fournit la même interface pour une copie de travail du protocole ou
+un bundle publié décompressé. Tous les schémas sont enregistrés par `$id` avant compilation ; les références
 non résolues ne basculent jamais vers le réseau.
 
 ## Encoder et décoder les WebSocket frames
@@ -155,10 +155,11 @@ ainsi qu'un compiled binary resource smoke test.
 
 ## Périmètre
 
-Le repository normatif du protocole reste la source of truth. Ce SDK ne copie volontairement ni le
-server, ni les database adapters, ni le scheduling algorithm, ni le local runtime, ni les internal
-projection models de l'implémentation Python de référence. Les futures fonctions de runtime
-nécessiteront un travail distinct de behavioral conformance et seront documentées séparément.
+Le dépôt normatif du protocole reste la source de référence. Ce SDK ne copie volontairement ni le
+serveur, ni les adaptateurs de base de données, ni l’algorithme de planification, ni l’environnement
+d’exécution local, ni les modèles de projection internes de l’implémentation Python de référence. Les
+futures fonctions d’exécution nécessiteront un travail distinct de conformité comportementale et
+seront documentées séparément.
 
 ## Licence
 

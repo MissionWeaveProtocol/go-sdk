@@ -14,12 +14,11 @@
 
 MissionWeaveProtocol Go SDK 為
 [MissionWeaveProtocol](https://github.com/missionweaveprotocol/missionweaveprotocol) 0.1 提供
-schema-first Go bindings。Go module 為 `github.com/missionweaveprotocol/go-sdk`，根 package
+Schema 優先的 Go 綁定。Go 模組為 `github.com/missionweaveprotocol/go-sdk`，根套件
 為 `missionweaveprotocol`。
 
-本版本僅證明 **schema-and-vector conformance**。它不宣稱 authoritative Core、Agent
-runtime、Worker Scheduler、Group gateway、持久化或完整的 Mission/工作項狀態機的
-behavioral conformance。
+本版本僅證明 **Schema 和向量符合性**。它不宣稱權威 Core、Agent
+runtime、Worker Scheduler、Group gateway、持久化或完整 Mission/工作項狀態機的行為符合性。
 
 ## 協定相容性
 
@@ -27,8 +26,8 @@ behavioral conformance。
 | ------- | -------------------- |
 | `0.1.x` | `0.1`                |
 
-SDK 和協定採用獨立版本。[`PROTOCOL_PIN.json`](PROTOCOL_PIN.json) 記錄精確的協定 commit，
-以及 vendored schema 和 conformance vector 的 SHA-256 digest。
+SDK 和協定採用獨立版本。[`PROTOCOL_PIN.json`](PROTOCOL_PIN.json) 記錄精確的協定提交，
+以及內建 Schema 和符合性向量的 SHA-256 摘要。
 
 ## 需求和安裝
 
@@ -40,18 +39,18 @@ go get github.com/missionweaveprotocol/go-sdk@latest
 
 ## 已包含的能力
 
-- 依原始位元組嵌入的 protocol pin、21 個 Draft 2020-12 schema 和 52 個 conformance vector；
-- 驗證 schema、conformance 和組合 bundle digest；
-- 嚴格的 UTF-8 JSON 解析，並遞迴拒絕重複 member；
-- 離線 `$id` schema 解析、format assertion 和 ECMAScript 相容 pattern；
-- 使用 embedded 或呼叫端提供的 `fs.FS` 的 `SchemaCatalog`；
-- 52-vector conformance runner 和 `missionweaveprotocol-conformance` 指令；
-- RFC 8785 JSON canonicalization 和 `sha256:` content identifier；
-- 使用無 padding base64url 值的 Ed25519 簽署和驗證；
-- 簽署 payload 僅排除頂層 `signature` member；
-- 用於 WebSocket frame 的 generic、schema-validating、canonical `FrameCodec`。
+- 依原始位元組嵌入的協定鎖定資訊、21 個 Draft 2020-12 Schema 和 52 個符合性向量；
+- 驗證 Schema、符合性向量和組合協定包的摘要；
+- 嚴格的 UTF-8 JSON 解析，並遞迴拒絕重複成員；
+- 透過 `$id` 離線解析 Schema，並支援格式斷言和 ECMAScript 相容模式；
+- 使用內建或呼叫端提供的 `fs.FS` 的 `SchemaCatalog`；
+- 包含 52 個向量的符合性執行器和 `missionweaveprotocol-conformance` 指令；
+- RFC 8785 JSON 規範化和 `sha256:` 內容識別子；
+- 使用無填充 base64url 值的 Ed25519 簽署和驗證；
+- 簽署載荷僅排除頂層 `signature` 成員；
+- 用於 WebSocket frame 的通用、通過 Schema 驗證且輸出規範格式的 `FrameCodec`。
 
-## 驗證嵌入的協定 bundle
+## 驗證嵌入的協定包
 
 ```go
 if err := missionweaveprotocol.VerifyProtocolBundle(); err != nil {
@@ -78,8 +77,8 @@ if err := catalog.Validate("command.schema.json", commandJSON); err != nil {
 }
 ```
 
-`NewSchemaCatalog(source fs.FS)` 為已解壓縮的協定 checkout 或 release bundle 提供相同的
-Interface。所有 schema 都會在編譯前依 `$id` 註冊；未解析的參照絕不會回退到網路。
+`NewSchemaCatalog(source fs.FS)` 為已解壓縮的協定檢出目錄或發行包提供相同的
+介面。所有 Schema 都會在編譯前依 `$id` 註冊；未解析的參照絕不會回退到網路。
 
 ## 編解碼 WebSocket frame
 
@@ -100,10 +99,10 @@ if err != nil {
 }
 ```
 
-`DecodeFrame` 會拒絕格式錯誤的 UTF-8、重複 JSON member、未知 frame variant、額外欄位和
-不符合 schema 的內容。`EncodeFrame` 會先驗證，再傳回 canonical RFC 8785 JSON。
+`DecodeFrame` 會拒絕格式錯誤的 UTF-8、重複 JSON 成員、未知 frame 變體、額外欄位和
+不符合 Schema 的內容。`EncodeFrame` 會先驗證，再傳回規範化的 RFC 8785 JSON。
 
-## Canonicalize、hash 和簽署
+## 規範化、計算雜湊並簽署
 
 ```go
 canonical, err := missionweaveprotocol.CanonicalizeJSON(document)
@@ -112,27 +111,27 @@ signature, err := missionweaveprotocol.SignDocument(privateKey, document)
 verified, err := missionweaveprotocol.VerifyDocument(publicKey, document, signature)
 ```
 
-`CanonicalizeJSON`、`CanonicalHash` 和 document-signing Interface 接受 JSON bytes，且不會
+`CanonicalizeJSON`、`CanonicalHash` 和文件簽署介面接受 JSON 位元組，且不會
 對 `time.Time` 等 Go 值執行自訂轉換。`MarshalCanonicalJSON` 是明確的便利函式，會先使用
-標準 `encoding/json` marshaling，再執行 JCS。`SignDocument` 和 `VerifyDocument` 會在
-canonicalization 前移除頂層 `signature` member；同名的巢狀 member 仍會被簽署。
+標準 `encoding/json` 序列化，再執行 JCS。`SignDocument` 和 `VerifyDocument` 會在
+規範化前移除頂層 `signature` 成員；同名的巢狀成員仍會被簽署。
 
-## 執行 conformance
+## 執行符合性測試
 
-針對嵌入的協定 bundle 執行：
+針對嵌入的協定包執行：
 
 ```bash
 go run github.com/missionweaveprotocol/go-sdk/cmd/missionweaveprotocol-conformance@latest
 ```
 
-針對協定 checkout 或 release bundle 執行：
+針對協定檢出目錄或發行包執行：
 
 ```bash
 go run ./cmd/missionweaveprotocol-conformance --root ../missionweaveprotocol
 ```
 
-成功時會回報 `52/52 conformance vectors passed`。若 validity 不相符、vector 格式錯誤、
-資源缺失或 schema 編譯失敗，指令將以非零狀態結束。
+成功時會回報 `52/52 conformance vectors passed`。若有效性不相符、向量格式錯誤、
+資源缺失或 Schema 編譯失敗，指令將以非零狀態結束。
 
 ## 範例和開發
 
@@ -145,14 +144,14 @@ go vet ./...
 go build ./...
 ```
 
-CI gate 還會驗證格式、canonical naming、embedded 和 checkout 兩種 conformance，以及
-compiled binary resource smoke test。
+CI 門檻還會驗證格式、規範命名、內建和檢出目錄兩種符合性模式，以及
+編譯後二進位檔的資源煙霧測試。
 
 ## 範圍
 
-規範性協定儲存庫始終是權威來源。本 SDK 刻意不複製 Python 參考實作的 server、database
-adapter、scheduling algorithm、local runtime 或 internal projection model。未來的 runtime
-功能需要獨立的 behavioral conformance 工作，並會另行記錄。
+規範性協定儲存庫始終是權威來源。本 SDK 刻意不複製 Python 參考實作的伺服器、資料庫
+轉接器、排程演算法、本機 runtime 或內部投影模型。未來的 runtime
+功能需要獨立的行為符合性工作，並會另行記錄。
 
 ## 授權條款
 

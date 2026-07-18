@@ -12,9 +12,9 @@
   <strong><a href="https://missionweaveprotocol.github.io/">Sitio web y documentación oficiales</a></strong>
 </p>
 
-MissionWeaveProtocol Go SDK ofrece bindings de Go basados primero en schemas para
+MissionWeaveProtocol Go SDK ofrece bindings de Go con un enfoque centrado en los esquemas para
 [MissionWeaveProtocol](https://github.com/missionweaveprotocol/missionweaveprotocol) 0.1. El Go
-module es `github.com/missionweaveprotocol/go-sdk` y su package raíz es `missionweaveprotocol`.
+módulo es `github.com/missionweaveprotocol/go-sdk` y su paquete raíz es `missionweaveprotocol`.
 
 Esta versión demuestra únicamente **conformidad con esquemas y vectores**. No afirma conformidad de
 comportamiento para un Core autoritativo, Agent runtime, Worker Scheduler, Group gateway,
@@ -27,8 +27,8 @@ persistencia ni para la máquina de estados completa de Mission/WorkItem.
 | `0.1.x` | `0.1`                |
 
 Las versiones del SDK y del protocolo son independientes.
-[`PROTOCOL_PIN.json`](PROTOCOL_PIN.json) registra el commit exacto del protocolo y los SHA-256
-digest de los schemas y conformance vectors incluidos.
+[`PROTOCOL_PIN.json`](PROTOCOL_PIN.json) registra el commit exacto del protocolo y los resúmenes
+SHA-256 de los esquemas y vectores de conformidad incluidos.
 
 ## Requisitos e instalación
 
@@ -78,8 +78,8 @@ if err := catalog.Validate("command.schema.json", commandJSON); err != nil {
 }
 ```
 
-`NewSchemaCatalog(source fs.FS)` ofrece la misma Interface para un protocol checkout o release
-bundle descomprimido. Todos los schemas se registran por `$id` antes de compilarse; las referencias
+`NewSchemaCatalog(source fs.FS)` ofrece la misma interfaz para un checkout del protocolo o un bundle
+de distribución descomprimido. Todos los esquemas se registran por `$id` antes de compilarse; las referencias
 sin resolver nunca recurren a la red.
 
 ## Codificar y decodificar WebSocket frames
@@ -154,10 +154,10 @@ compiled binary resource smoke test.
 
 ## Alcance
 
-El repository normativo del protocolo sigue siendo la source of truth. Este SDK no copia el server,
-los database adapters, el scheduling algorithm, el local runtime ni los internal projection models
-de la implementación de referencia de Python. Las futuras funciones de runtime requerirán trabajo
-independiente de behavioral conformance y se documentarán por separado.
+El repositorio normativo del protocolo sigue siendo la fuente de referencia. Este SDK no copia el servidor,
+los adaptadores de base de datos, el algoritmo de planificación, el entorno de ejecución local ni los modelos
+de proyección internos de la implementación de referencia de Python. Las futuras funciones de runtime
+requerirán trabajo independiente de conformidad del comportamiento y se documentarán por separado.
 
 ## Licencia
 

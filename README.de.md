@@ -12,9 +12,9 @@
   <strong><a href="https://missionweaveprotocol.github.io/">Offizielle Website und Dokumentation</a></strong>
 </p>
 
-Das MissionWeaveProtocol Go SDK stellt schema-first Go bindings für
+Das MissionWeaveProtocol Go SDK stellt schemaorientierte Go-Bindings für
 [MissionWeaveProtocol](https://github.com/missionweaveprotocol/missionweaveprotocol) 0.1 bereit. Das
-Go module heißt `github.com/missionweaveprotocol/go-sdk`, das root package
+Go-Modul heißt `github.com/missionweaveprotocol/go-sdk`, das Root-Paket
 `missionweaveprotocol`.
 
 Diese Version weist ausschließlich **Schema- und Vektorkonformität** nach. Sie beansprucht keine
@@ -28,7 +28,7 @@ Persistenz oder die vollständige Mission/WorkItem-Zustandsmaschine.
 | `0.1.x` | `0.1`                |
 
 SDK und Protokoll werden unabhängig versioniert. [`PROTOCOL_PIN.json`](PROTOCOL_PIN.json) hält den
-exakten Protokoll-commit und die SHA-256 digest der vendored schemas und conformance vectors fest.
+exakten Protokoll-Commit und die SHA-256-Digests der eingebetteten Schemas und Konformitätsvektoren fest.
 
 ## Voraussetzungen und Installation
 
@@ -78,8 +78,8 @@ if err := catalog.Validate("command.schema.json", commandJSON); err != nil {
 }
 ```
 
-`NewSchemaCatalog(source fs.FS)` stellt dieselbe Interface für einen entpackten protocol checkout
-oder release bundle bereit. Alle schemas werden vor dem Kompilieren über `$id` registriert;
+`NewSchemaCatalog(source fs.FS)` stellt dieselbe Schnittstelle für einen entpackten Protokoll-Checkout
+oder ein Release-Bündel bereit. Alle Schemas werden vor dem Kompilieren über `$id` registriert;
 unaufgelöste Referenzen greifen niemals auf das Netzwerk zurück.
 
 ## WebSocket-Frames kodieren und dekodieren
@@ -154,10 +154,10 @@ einen compiled binary resource smoke test.
 
 ## Umfang
 
-Das normative Protokoll-repository bleibt die source of truth. Dieses SDK kopiert bewusst weder
-server noch database adapters, scheduling algorithm, local runtime oder internal projection models
-der Python-Referenzimplementierung. Künftige runtime-Funktionen benötigen eigenständige behavioral
-conformance-Arbeit und werden separat dokumentiert.
+Das normative Protokoll-Repository bleibt die maßgebliche Quelle. Dieses SDK kopiert bewusst weder
+Server noch Datenbankadapter, Planungsalgorithmus, lokale Laufzeit oder interne Projektionsmodelle
+der Python-Referenzimplementierung. Künftige Laufzeitfunktionen benötigen eigenständige Arbeiten zur
+Verhaltenskonformität und werden separat dokumentiert.
 
 ## Lizenz
 
