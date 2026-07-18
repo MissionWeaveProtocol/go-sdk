@@ -48,6 +48,7 @@ go get github.com/missionweaveprotocol/go-sdk@latest
 - RFC 8785 JSON 規範化和 `sha256:` 內容識別子；
 - 使用無填充 base64url 值的 Ed25519 簽署和驗證；
 - 簽署載荷僅排除頂層 `signature` 成員；
+- `SignedDocumentCodec` 涵蓋全部 22 個密碼學案例和 58 項評估；
 - 用於 WebSocket frame 的通用、通過 Schema 驗證且輸出規範格式的 `FrameCodec`。
 
 ## 驗證嵌入的協定包
@@ -115,6 +116,23 @@ verified, err := missionweaveprotocol.VerifyDocument(publicKey, document, signat
 對 `time.Time` 等 Go 值執行自訂轉換。`MarshalCanonicalJSON` 是明確的便利函式，會先使用
 標準 `encoding/json` 序列化，再執行 JCS。`SignDocument` 和 `VerifyDocument` 會在
 規範化前移除頂層 `signature` 成員；同名的巢狀成員仍會被簽署。
+
+## 簽名並驗證 Signed Document
+
+`SignedDocumentCodec` 依序實作密碼學驗證流程，而且僅接受九種明確的文件 kind：
+
+```go
+codec, err := missionweaveprotocol.NewSignedDocumentCodec()
+signed, err := codec.Sign(missionweaveprotocol.SignedDocumentCommand, unsigned, signingKey)
+verified, err := codec.Verify(missionweaveprotocol.SignedDocumentCommand, raw, keyResolver)
+fmt.Println(signed["signature"], verified.SigningHash(), verified.ResolvedKey().Principal())
+```
+
+`SigningKey` 是唯一的簽名 adapter。`KeyResolver` 接收 `KeyResolutionRequest`，而且必須回傳
+明確宣告 `KeyRegistryOrganizationWide` 完整性的 `KeyRegistrySnapshot`；局部或未宣告完整性的
+Registry snapshot 會 fail closed。驗證錯誤對 peer 僅公開穩定的 `WireCode()`，而
+`ProtectedDiagnostic()` 會為本機維運保留第一個失敗階段與原因。可執行的測試 fixture 範例見
+[`examples/sign`](examples/sign)。
 
 ## 執行符合性測試
 

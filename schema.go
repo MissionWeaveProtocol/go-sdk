@@ -49,6 +49,10 @@ func NewSchemaCatalog(source fs.FS) (*SchemaCatalog, error) {
 
 	compiler := jsonschema.NewCompiler()
 	compiler.DefaultDraft(jsonschema.Draft2020)
+	compiler.RegisterFormat(&jsonschema.Format{
+		Name:     "date-time",
+		Validate: validateProtocolDateTimeFormat,
+	})
 	compiler.AssertFormat()
 	compiler.UseLoader(offlineSchemaLoader{})
 	compiler.UseRegexpEngine(compileECMAScript)

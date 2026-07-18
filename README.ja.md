@@ -50,6 +50,7 @@ go get github.com/missionweaveprotocol/go-sdk@latest
 - RFC 8785 JSON 正規化と `sha256:` コンテンツ識別子。
 - パディングなし base64url を使う Ed25519 署名と検証。
 - トップレベルの `signature` メンバーだけを除外する署名ペイロード。
+- 全 22 件の暗号ケースと 58 評価を網羅する `SignedDocumentCodec`。
 - WebSocket フレーム向けの汎用的で、Schema 検証と正規化を行う `FrameCodec`。
 
 ## 組み込みプロトコルバンドルの検証
@@ -120,6 +121,25 @@ verified, err := missionweaveprotocol.VerifyDocument(publicKey, document, signat
 `encoding/json` によるマーシャリングの後に JCS を実行する明示的な便利関数です。
 `SignDocument` と `VerifyDocument` は正規化の前にトップレベルの `signature`
 メンバーを削除します。同名のネストされたメンバーは署名対象のままです。
+
+## Signed Document の署名と検証
+
+`SignedDocumentCodec` は暗号検証プロファイルを順序どおりに実装し、明示された 9 種類の
+文書 kind だけを受け取ります。
+
+```go
+codec, err := missionweaveprotocol.NewSignedDocumentCodec()
+signed, err := codec.Sign(missionweaveprotocol.SignedDocumentCommand, unsigned, signingKey)
+verified, err := codec.Verify(missionweaveprotocol.SignedDocumentCommand, raw, keyResolver)
+fmt.Println(signed["signature"], verified.SigningHash(), verified.ResolvedKey().Principal())
+```
+
+署名側の唯一のアダプターは `SigningKey` です。`KeyResolver` は `KeyResolutionRequest` を
+受け取り、完全性を `KeyRegistryOrganizationWide` と明示した `KeyRegistrySnapshot` を返す
+必要があります。部分的、または完全性が未指定の Registry スナップショットは fail closed
+になります。検証エラーは peer には安定した `WireCode()` だけを公開し、
+`ProtectedDiagnostic()` はローカル運用向けに最初の失敗段階と理由を保持します。実行可能な
+テスト fixture の例は [`examples/sign`](examples/sign) を参照してください。
 
 ## 適合性テストの実行
 

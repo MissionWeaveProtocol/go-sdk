@@ -49,6 +49,7 @@ go get github.com/missionweaveprotocol/go-sdk@latest
 - RFC 8785 JSON canonicalization and `sha256:` content identifiers;
 - Ed25519 signing and verification with unpadded base64url values;
 - signing payloads that exclude only the top-level `signature` member;
+- `SignedDocumentCodec` coverage for all 22 cryptography cases and 58 evaluations;
 - a generic, schema-validating, canonical `FrameCodec` for WebSocket frames.
 
 ## Verify the embedded protocol bundle
@@ -118,6 +119,25 @@ not apply custom conversions for Go values such as `time.Time`. `MarshalCanonica
 explicit convenience that applies standard `encoding/json` marshaling before JCS. `SignDocument`
 and `VerifyDocument` remove the top-level `signature` member before canonicalization; nested
 members with that name remain signed.
+
+## Sign and verify Signed Documents
+
+`SignedDocumentCodec` implements the ordered cryptographic profile for exactly nine explicit
+document kinds:
+
+```go
+codec, err := missionweaveprotocol.NewSignedDocumentCodec()
+signed, err := codec.Sign(missionweaveprotocol.SignedDocumentCommand, unsigned, signingKey)
+verified, err := codec.Verify(missionweaveprotocol.SignedDocumentCommand, raw, keyResolver)
+fmt.Println(signed["signature"], verified.SigningHash(), verified.ResolvedKey().Principal())
+```
+
+`SigningKey` is the only signing adapter. `KeyResolver` receives a `KeyResolutionRequest` and must
+return a `KeyRegistrySnapshot` whose completeness is explicitly
+`KeyRegistryOrganizationWide`; partial or unspecified Registry snapshots fail closed. Verification
+errors expose only a stable `WireCode()` to peers, while `ProtectedDiagnostic()` retains the first
+failing stage and reason for local operators. See the runnable test-fixture example in
+[`examples/sign`](examples/sign).
 
 ## Run conformance
 

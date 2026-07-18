@@ -49,6 +49,7 @@ go get github.com/missionweaveprotocol/go-sdk@latest
 - RFC-8785-JSON-canonicalization und `sha256:` content identifiers;
 - Ed25519-Signieren und -Prüfen mit base64url ohne padding;
 - Signatur-payloads, die ausschließlich das oberste `signature` member ausschließen;
+- `SignedDocumentCodec`-Abdeckung für alle 22 Kryptografie-Fälle und 58 Auswertungen;
 - ein generic, schema-validating und canonical `FrameCodec` für WebSocket frames.
 
 ## Embedded protocol bundle prüfen
@@ -119,6 +120,26 @@ wenden keine eigenen Konvertierungen auf Go-Werte wie `time.Time` an. `MarshalCa
 eine explizite Hilfsfunktion, die vor JCS das standardmäßige `encoding/json` marshaling ausführt.
 `SignDocument` und `VerifyDocument` entfernen vor der canonicalization das oberste `signature`
 member; verschachtelte members gleichen Namens bleiben Teil der Signatur.
+
+## Signed Documents signieren und verifizieren
+
+`SignedDocumentCodec` führt das kryptografische Profil in der festgelegten Reihenfolge aus und
+akzeptiert nur die neun expliziten Dokument-Kinds:
+
+```go
+codec, err := missionweaveprotocol.NewSignedDocumentCodec()
+signed, err := codec.Sign(missionweaveprotocol.SignedDocumentCommand, unsigned, signingKey)
+verified, err := codec.Verify(missionweaveprotocol.SignedDocumentCommand, raw, keyResolver)
+fmt.Println(signed["signature"], verified.SigningHash(), verified.ResolvedKey().Principal())
+```
+
+`SigningKey` ist der einzige Signaturadapter. `KeyResolver` erhält einen `KeyResolutionRequest` und
+muss einen `KeyRegistrySnapshot` mit ausdrücklich deklarierter
+`KeyRegistryOrganizationWide`-Vollständigkeit zurückgeben; partielle Registry-Snapshots oder
+Snapshots ohne Vollständigkeitserklärung schlagen fail closed fehl. Fehler legen Peers nur einen
+stabilen `WireCode()` offen, während `ProtectedDiagnostic()` die erste fehlgeschlagene Stufe und
+ihren Grund lokal bewahrt. Das ausführbare Beispiel mit Test-Fixtures befindet sich unter
+[`examples/sign`](examples/sign).
 
 ## Conformance ausführen
 
