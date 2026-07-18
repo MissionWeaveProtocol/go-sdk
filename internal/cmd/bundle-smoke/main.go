@@ -12,6 +12,10 @@ func main() {
 		fmt.Fprintf(os.Stderr, "embedded protocol bundle verification failed: %v\n", err)
 		os.Exit(1)
 	}
+	if err := missionweaveprotocol.VerifyCryptographyBundle(); err != nil {
+		fmt.Fprintf(os.Stderr, "embedded cryptography bundle verification failed: %v\n", err)
+		os.Exit(1)
+	}
 	pin, err := missionweaveprotocol.CurrentProtocolPin()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "embedded protocol pin failed: %v\n", err)

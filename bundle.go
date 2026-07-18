@@ -1,6 +1,7 @@
 package missionweaveprotocol
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"embed"
 	"encoding/hex"
@@ -15,7 +16,18 @@ import (
 
 const protocolPinPath = "PROTOCOL_PIN.json"
 
-//go:embed PROTOCOL_PIN.json schemas/*.json conformance/manifest.json conformance/vectors/valid/*.json conformance/vectors/invalid/*.json
+var expectedCryptographyPin = CryptographyPin{
+	Path:            "cryptography/manifest.json",
+	SourceCommit:    "235aee85ba88934641822e1639e08efd2c9e29b6",
+	ProfileID:       "missionweaveprotocol.signed-document-verification.v0.1",
+	ManifestVersion: 1,
+	ArtifactDigest:  "sha256:487e18c1ea7053432953f28d1496ae4fdb8e9d42c2eeb8e94f9b21f8cc2596a2",
+	ArtifactCount:   94,
+	CaseCount:       22,
+	EvaluationCount: 58,
+}
+
+//go:embed PROTOCOL_PIN.json schemas/*.json conformance/manifest.json conformance/vectors/valid/*.json conformance/vectors/invalid/*.json cryptography
 var embeddedProtocolBundle embed.FS
 
 // PinnedArtifact records one byte-exact protocol artifact tree.
@@ -25,6 +37,18 @@ type PinnedArtifact struct {
 	SHA256 string `json:"sha256"`
 }
 
+// CryptographyPin identifies the independent signed-document cryptography bundle.
+type CryptographyPin struct {
+	Path            string `json:"path"`
+	SourceCommit    string `json:"sourceCommit"`
+	ProfileID       string `json:"profileId"`
+	ManifestVersion int    `json:"manifestVersion"`
+	ArtifactDigest  string `json:"artifactDigest"`
+	ArtifactCount   int    `json:"artifactCount"`
+	CaseCount       int    `json:"caseCount"`
+	EvaluationCount int    `json:"evaluationCount"`
+}
+
 // ProtocolPin identifies the normative protocol source and its vendored artifact digests.
 type ProtocolPin struct {
 	Repository      string                    `json:"repository"`
@@ -32,7 +56,27 @@ type ProtocolPin struct {
 	ProtocolVersion string                    `json:"protocolVersion"`
 	WireNamespace   string                    `json:"wireNamespace"`
 	Artifacts       map[string]PinnedArtifact `json:"artifacts"`
+	Cryptography    CryptographyPin           `json:"cryptography"`
 	BundleSHA256    string                    `json:"bundleSha256"`
+}
+
+type cryptographyManifest struct {
+	ManifestVersion int                    `json:"manifestVersion"`
+	ProfileID       string                 `json:"profileId"`
+	ProtocolVersion string                 `json:"protocolVersion"`
+	ArtifactDigest  string                 `json:"artifactDigest"`
+	Artifacts       []cryptographyArtifact `json:"artifacts"`
+	Cases           []cryptographyCase     `json:"cases"`
+}
+
+type cryptographyArtifact struct {
+	Path       string `json:"path"`
+	ByteLength int    `json:"byteLength"`
+	SHA256     string `json:"sha256"`
+}
+
+type cryptographyCase struct {
+	Evaluations []json.RawMessage `json:"evaluations"`
 }
 
 // ProtocolFS returns the immutable embedded protocol artifact filesystem.
@@ -54,6 +98,17 @@ func ReadProtocolFile(name string) ([]byte, error) {
 
 // CurrentProtocolPin loads the metadata embedded with this SDK build.
 func CurrentProtocolPin() (ProtocolPin, error) {
+	pin, err := loadProtocolPin()
+	if err != nil {
+		return ProtocolPin{}, err
+	}
+	if err := validatePin(pin); err != nil {
+		return ProtocolPin{}, err
+	}
+	return pin, nil
+}
+
+func loadProtocolPin() (ProtocolPin, error) {
 	contents, err := ReadProtocolFile(protocolPinPath)
 	if err != nil {
 		return ProtocolPin{}, err
@@ -62,8 +117,22 @@ func CurrentProtocolPin() (ProtocolPin, error) {
 	if err := json.Unmarshal(contents, &pin); err != nil {
 		return ProtocolPin{}, fmt.Errorf("decode protocol pin: %w", err)
 	}
-	if err := validatePin(pin); err != nil {
+	return pin, nil
+}
+
+func loadStrictProtocolPin() (ProtocolPin, error) {
+	contents, err := ReadProtocolFile(protocolPinPath)
+	if err != nil {
 		return ProtocolPin{}, err
+	}
+	if _, err := DecodeJSON(contents); err != nil {
+		return ProtocolPin{}, fmt.Errorf("decode protocol pin strictly: %w", err)
+	}
+	var pin ProtocolPin
+	decoder := json.NewDecoder(bytes.NewReader(contents))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&pin); err != nil {
+		return ProtocolPin{}, fmt.Errorf("decode protocol pin: %w", err)
 	}
 	return pin, nil
 }
@@ -105,6 +174,84 @@ func VerifyProtocolBundle() error {
 	return nil
 }
 
+// VerifyCryptographyBundle verifies the independent signed-document cryptography manifest and
+// every digest-protected artifact embedded with this SDK build.
+func VerifyCryptographyBundle() error {
+	pin, err := loadStrictProtocolPin()
+	if err != nil {
+		return err
+	}
+	if err := validateCryptographyPin(pin.Cryptography); err != nil {
+		return err
+	}
+	manifestBytes, err := ReadProtocolFile(pin.Cryptography.Path)
+	if err != nil {
+		return err
+	}
+	parsed, err := DecodeJSON(manifestBytes)
+	if err != nil {
+		return fmt.Errorf("decode cryptography manifest: %w", err)
+	}
+	manifestObject, ok := parsed.(map[string]any)
+	if !ok {
+		return errors.New("cryptography manifest must be a JSON object")
+	}
+	var manifest cryptographyManifest
+	if err := json.Unmarshal(manifestBytes, &manifest); err != nil {
+		return fmt.Errorf("decode cryptography manifest fields: %w", err)
+	}
+	if err := verifyCryptographyManifestMetadata(pin, manifest); err != nil {
+		return err
+	}
+
+	seen := make(map[string]struct{}, len(manifest.Artifacts))
+	for _, artifact := range manifest.Artifacts {
+		if err := validateCryptographyArtifactPath(artifact.Path); err != nil {
+			return err
+		}
+		if _, duplicate := seen[artifact.Path]; duplicate {
+			return fmt.Errorf("cryptography manifest repeats artifact path %q", artifact.Path)
+		}
+		seen[artifact.Path] = struct{}{}
+		contents, err := ReadProtocolFile(artifact.Path)
+		if err != nil {
+			return fmt.Errorf("verify cryptography artifact %q: %w", artifact.Path, err)
+		}
+		if len(contents) != artifact.ByteLength {
+			return fmt.Errorf(
+				"cryptography artifact %q byte length mismatch: manifest=%d embedded=%d",
+				artifact.Path,
+				artifact.ByteLength,
+				len(contents),
+			)
+		}
+		actual := sha256Identifier(contents)
+		if actual != artifact.SHA256 {
+			return fmt.Errorf(
+				"cryptography artifact %q digest mismatch: manifest=%s embedded=%s",
+				artifact.Path,
+				artifact.SHA256,
+				actual,
+			)
+		}
+	}
+
+	delete(manifestObject, "artifactDigest")
+	canonical, err := MarshalCanonicalJSON(manifestObject)
+	if err != nil {
+		return fmt.Errorf("canonicalize cryptography manifest: %w", err)
+	}
+	actualDigest := sha256Identifier(canonical)
+	if actualDigest != pin.Cryptography.ArtifactDigest {
+		return fmt.Errorf(
+			"cryptography manifest digest mismatch: pin=%s embedded=%s",
+			pin.Cryptography.ArtifactDigest,
+			actualDigest,
+		)
+	}
+	return nil
+}
+
 func validatePin(pin ProtocolPin) error {
 	if pin.Repository == "" || pin.Commit == "" || pin.ProtocolVersion == "" || pin.WireNamespace == "" {
 		return errors.New("protocol pin identity fields must not be empty")
@@ -128,6 +275,67 @@ func validatePin(pin ProtocolPin) error {
 		return errors.New("protocol pin contains an invalid bundle digest")
 	}
 	return nil
+}
+
+func validateCryptographyPin(pin CryptographyPin) error {
+	if pin != expectedCryptographyPin {
+		return fmt.Errorf("protocol pin cryptography entry does not match the published bundle: %+v", pin)
+	}
+	return nil
+}
+
+func verifyCryptographyManifestMetadata(pin ProtocolPin, manifest cryptographyManifest) error {
+	cryptography := pin.Cryptography
+	if manifest.ManifestVersion != cryptography.ManifestVersion ||
+		manifest.ProfileID != cryptography.ProfileID ||
+		manifest.ProtocolVersion != pin.ProtocolVersion ||
+		manifest.ArtifactDigest != cryptography.ArtifactDigest {
+		return errors.New("cryptography manifest identity does not match PROTOCOL_PIN.json")
+	}
+	if len(manifest.Artifacts) != cryptography.ArtifactCount {
+		return fmt.Errorf(
+			"cryptography artifact count mismatch: pin=%d manifest=%d",
+			cryptography.ArtifactCount,
+			len(manifest.Artifacts),
+		)
+	}
+	if len(manifest.Cases) != cryptography.CaseCount {
+		return fmt.Errorf(
+			"cryptography case count mismatch: pin=%d manifest=%d",
+			cryptography.CaseCount,
+			len(manifest.Cases),
+		)
+	}
+	evaluations := 0
+	for _, testCase := range manifest.Cases {
+		evaluations += len(testCase.Evaluations)
+	}
+	if evaluations != cryptography.EvaluationCount {
+		return fmt.Errorf(
+			"cryptography evaluation count mismatch: pin=%d manifest=%d",
+			cryptography.EvaluationCount,
+			evaluations,
+		)
+	}
+	return nil
+}
+
+func validateCryptographyArtifactPath(name string) error {
+	if !fs.ValidPath(name) || path.Clean(name) != name || strings.Contains(name, "\\") {
+		return fmt.Errorf("cryptography manifest contains unsafe artifact path %q", name)
+	}
+	if name == "cryptography/README.md" || name == "cryptography/manifest.json" {
+		return fmt.Errorf("cryptography manifest contains non-artifact path %q", name)
+	}
+	if !strings.HasPrefix(name, "cryptography/") && !strings.HasPrefix(name, "schemas/") {
+		return fmt.Errorf("cryptography manifest artifact path is outside pinned roots: %q", name)
+	}
+	return nil
+}
+
+func sha256Identifier(contents []byte) string {
+	digest := sha256.Sum256(contents)
+	return "sha256:" + hex.EncodeToString(digest[:])
 }
 
 func digestJSONTree(root string) ([]string, string, error) {
@@ -165,5 +373,8 @@ func digestPaths(paths []string) (string, error) {
 }
 
 func isProtocolPath(name string) bool {
-	return name == protocolPinPath || strings.HasPrefix(name, "schemas/") || strings.HasPrefix(name, "conformance/")
+	return name == protocolPinPath ||
+		strings.HasPrefix(name, "schemas/") ||
+		strings.HasPrefix(name, "conformance/") ||
+		strings.HasPrefix(name, "cryptography/")
 }
