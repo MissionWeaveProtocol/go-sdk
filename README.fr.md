@@ -2,7 +2,7 @@
 [日本語](README.ja.md) | [Español](README.es.md) | **Français** |
 [Deutsch](README.de.md)
 
-# MissionWeaveProtocol Go SDK
+# SDK Go MissionWeaveProtocol
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/missionweaveprotocol/missionweaveprotocol/main/assets/brand/missionweaveprotocol-icon.svg" width="160" alt="Icône MissionWeaveProtocol">
@@ -28,8 +28,8 @@ Worker Scheduler, un Group gateway, la persistance ou la machine à états compl
 | `0.1.x` | `0.1`                |
 
 Les versions du SDK et du protocole sont indépendantes.
-[`PROTOCOL_PIN.json`](PROTOCOL_PIN.json) enregistre le commit exact du protocole et les SHA-256
-digest des schemas et conformance vectors vendored.
+[`PROTOCOL_PIN.json`](PROTOCOL_PIN.json) enregistre le commit exact du protocole ainsi que les
+empreintes SHA-256 des schémas et des vecteurs de conformité embarqués.
 
 ## Prérequis et installation
 
