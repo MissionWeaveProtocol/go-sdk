@@ -49,6 +49,7 @@ go get github.com/missionweaveprotocol/go-sdk@latest
 - canonicalization JSON RFC 8785 e identificadores `sha256:`;
 - firma y verificación Ed25519 con base64url sin padding;
 - payloads de firma que excluyen solo el member `signature` superior;
+- `SignedDocumentCodec` cubierto por los 22 casos criptográficos y las 58 evaluaciones;
 - `FrameCodec` generic, schema-validating y canonical para WebSocket frames.
 
 ## Verificar el protocol bundle embebido
@@ -119,6 +120,25 @@ aplican conversiones personalizadas a valores Go como `time.Time`. `MarshalCanon
 función de conveniencia explícita que usa el marshaling estándar de `encoding/json` antes de JCS.
 `SignDocument` y `VerifyDocument` eliminan el member `signature` superior antes de canonicalizar;
 los members anidados con el mismo nombre siguen firmados.
+
+## Firmar y verificar Signed Documents
+
+`SignedDocumentCodec` implementa en orden el perfil criptográfico y acepta únicamente los nueve
+kinds explícitos de documento:
+
+```go
+codec, err := missionweaveprotocol.NewSignedDocumentCodec()
+signed, err := codec.Sign(missionweaveprotocol.SignedDocumentCommand, unsigned, signingKey)
+verified, err := codec.Verify(missionweaveprotocol.SignedDocumentCommand, raw, keyResolver)
+fmt.Println(signed["signature"], verified.SigningHash(), verified.ResolvedKey().Principal())
+```
+
+`SigningKey` es el único adaptador de firma. `KeyResolver` recibe una `KeyResolutionRequest` y debe
+devolver un `KeyRegistrySnapshot` con completitud `KeyRegistryOrganizationWide` explícita; los
+snapshots parciales del Agent Registry o sin completitud fallan de forma cerrada. Los errores solo exponen a los peers
+un `WireCode()` estable, mientras `ProtectedDiagnostic()` conserva localmente la primera etapa
+fallida y su motivo. Consulta el ejemplo ejecutable con fixtures de prueba en
+[`examples/sign`](examples/sign).
 
 ## Ejecutar conformance
 
