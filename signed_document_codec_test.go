@@ -426,7 +426,7 @@ func TestSignedDocumentCodecDoesNotApplyFixtureOnlyRegistrySizeLimit(t *testing.
 		raw,
 		fixtureKeyResolver{registry: registryBytes},
 	); err != nil {
-		t.Fatalf("organization Registry with 65 bindings was rejected: %v", err)
+		t.Fatalf("organization-wide Agent Registry with 65 bindings was rejected: %v", err)
 	}
 }
 

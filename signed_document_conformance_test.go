@@ -5,14 +5,24 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"path"
 	"reflect"
+	"strings"
 	"testing"
+	"testing/fstest"
 
 	missionweaveprotocol "github.com/missionweaveprotocol/go-sdk"
 )
 
 type cryptographyManifest struct {
-	Cases []cryptographyCase `json:"cases"`
+	FixtureSchemas cryptographyFixtureSchemas `json:"fixtureSchemas"`
+	Cases          []cryptographyCase         `json:"cases"`
+}
+
+type cryptographyFixtureSchemas struct {
+	Registry   string `json:"registry"`
+	SigningKey string `json:"signingKey"`
 }
 
 type cryptographyCase struct {
@@ -53,15 +63,99 @@ type manifestPrincipal struct {
 	ID   string `json:"id"`
 }
 
-func TestSignedDocumentCodecPassesAllCryptographyEvaluations(t *testing.T) {
+func TestCryptographyFixtureValidationUsesManifestDeclaredSchema(t *testing.T) {
+	manifest := readCryptographyManifest(t)
+	manifest.FixtureSchemas.Registry = manifest.FixtureSchemas.SigningKey
+
+	if _, _, err := readValidatedCryptographyFixture(
+		manifest.FixtureSchemas,
+		"registry",
+		"cryptography/keys/registry-valid.json",
+	); err == nil {
+		t.Fatal("Registry fixture passed the manifest-declared signing-key fixture Schema")
+	}
+}
+
+func TestCryptographyFixtureValidationRejectsDuplicateMembersBeforeSchema(t *testing.T) {
+	fixture := []byte(
+		`{"organizationId":"urn:example:first","organizationId":"urn:example:second","bindings":[]}`,
+	)
+	if _, err := validateCryptographyFixture(
+		"cryptography/registry-fixture.schema.json",
+		fixture,
+	); err == nil || !strings.Contains(err.Error(), "duplicate") {
+		t.Fatalf("duplicate Registry fixture member was not rejected strictly: %v", err)
+	}
+}
+
+func readCryptographyManifest(t *testing.T) cryptographyManifest {
+	t.Helper()
 	manifestBytes, err := missionweaveprotocol.ReadProtocolFile("cryptography/manifest.json")
 	if err != nil {
 		t.Fatal(err)
+	}
+	if _, err := missionweaveprotocol.DecodeJSON(manifestBytes); err != nil {
+		t.Fatalf("strictly parse cryptography manifest: %v", err)
 	}
 	var manifest cryptographyManifest
 	if err := json.Unmarshal(manifestBytes, &manifest); err != nil {
 		t.Fatal(err)
 	}
+	return manifest
+}
+
+func readValidatedCryptographyFixture(
+	schemas cryptographyFixtureSchemas,
+	kind string,
+	fixturePath string,
+) (any, []byte, error) {
+	var schemaPath string
+	switch kind {
+	case "registry":
+		schemaPath = schemas.Registry
+	case "signingKey":
+		schemaPath = schemas.SigningKey
+	default:
+		return nil, nil, fmt.Errorf("unknown cryptography fixture kind %q", kind)
+	}
+	if schemaPath == "" {
+		return nil, nil, fmt.Errorf("cryptography manifest lacks %s fixture Schema", kind)
+	}
+	fixtureBytes, err := missionweaveprotocol.ReadProtocolFile(fixturePath)
+	if err != nil {
+		return nil, nil, fmt.Errorf("read %s fixture: %w", kind, err)
+	}
+	fixtureValue, err := validateCryptographyFixture(schemaPath, fixtureBytes)
+	if err != nil {
+		return nil, nil, fmt.Errorf("validate %s fixture: %w", kind, err)
+	}
+	return fixtureValue, fixtureBytes, nil
+}
+
+func validateCryptographyFixture(schemaPath string, fixtureBytes []byte) (any, error) {
+	schemaBytes, err := missionweaveprotocol.ReadProtocolFile(schemaPath)
+	if err != nil {
+		return nil, fmt.Errorf("read fixture Schema: %w", err)
+	}
+	schemaName := path.Base(schemaPath)
+	catalog, err := missionweaveprotocol.NewSchemaCatalog(fstest.MapFS{
+		"schemas/" + schemaName: &fstest.MapFile{Data: schemaBytes},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("compile fixture Schema: %w", err)
+	}
+	if err := catalog.Validate(schemaName, fixtureBytes); err != nil {
+		return nil, fmt.Errorf("fixture does not satisfy %s: %w", schemaPath, err)
+	}
+	fixtureValue, err := missionweaveprotocol.DecodeJSON(fixtureBytes)
+	if err != nil {
+		return nil, fmt.Errorf("strictly parse validated fixture: %w", err)
+	}
+	return fixtureValue, nil
+}
+
+func TestSignedDocumentCodecPassesAllCryptographyEvaluations(t *testing.T) {
+	manifest := readCryptographyManifest(t)
 	codec, err := missionweaveprotocol.NewSignedDocumentCodec()
 	if err != nil {
 		t.Fatal(err)
@@ -86,9 +180,29 @@ func TestSignedDocumentCodecPassesAllCryptographyEvaluations(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				registry, err := missionweaveprotocol.ReadProtocolFile(evaluation.Registry)
+				_, registry, err := readValidatedCryptographyFixture(
+					manifest.FixtureSchemas,
+					"registry",
+					evaluation.Registry,
+				)
 				if err != nil {
 					t.Fatal(err)
+				}
+				var signingFixture map[string]any
+				if evaluation.SigningKey != "" {
+					fixture, _, err := readValidatedCryptographyFixture(
+						manifest.FixtureSchemas,
+						"signingKey",
+						evaluation.SigningKey,
+					)
+					if err != nil {
+						t.Fatal(err)
+					}
+					var ok bool
+					signingFixture, ok = fixture.(map[string]any)
+					if !ok {
+						t.Fatal("signing-key fixture is not a JSON object")
+					}
 				}
 				verified, err := codec.Verify(kind, raw, fixtureKeyResolver{registry: registry})
 				if evaluation.Expect.Stage != "complete" {
@@ -101,7 +215,7 @@ func TestSignedDocumentCodecPassesAllCryptographyEvaluations(t *testing.T) {
 					t.Fatalf("expected complete verification: %v", err)
 				}
 				assertVerifiedEvaluation(t, verified, evaluation)
-				assertSigningEvaluation(t, codec, kind, evaluation)
+				assertSigningEvaluation(t, codec, kind, evaluation, signingFixture)
 			})
 		}
 	}
@@ -205,12 +319,15 @@ func assertSigningEvaluation(
 	codec *missionweaveprotocol.SignedDocumentCodec,
 	kind missionweaveprotocol.SignedDocumentKind,
 	evaluation cryptographyEvaluation,
+	fixture map[string]any,
 ) {
 	t.Helper()
 	expected := readJSONObject(t, evaluation.Document)
 	unsigned := readJSONObject(t, evaluation.Document)
 	delete(unsigned, "signature")
-	fixture := readJSONObject(t, evaluation.SigningKey)
+	if fixture == nil {
+		t.Fatal("complete signed-document evaluation has no validated signing-key fixture")
+	}
 	seed, err := base64.RawURLEncoding.Strict().DecodeString(fixture["seed"].(string))
 	if err != nil {
 		t.Fatal(err)

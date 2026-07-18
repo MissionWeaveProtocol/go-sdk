@@ -136,7 +136,7 @@ fmt.Println(signed["signature"], verified.SigningHash(), verified.ResolvedKey().
 
 署名側の唯一のアダプターは `SigningKey` です。`KeyResolver` は `KeyResolutionRequest` を
 受け取り、完全性を `KeyRegistryOrganizationWide` と明示した `KeyRegistrySnapshot` を返す
-必要があります。部分的、または完全性が未指定の Registry スナップショットは fail closed
+必要があります。部分的、または完全性が未指定の Agent Registry スナップショットは fail closed
 になります。検証エラーは peer には安定した `WireCode()` だけを公開し、
 `ProtectedDiagnostic()` はローカル運用向けに最初の失敗段階と理由を保持します。実行可能な
 テスト fixture の例は [`examples/sign`](examples/sign) を参照してください。

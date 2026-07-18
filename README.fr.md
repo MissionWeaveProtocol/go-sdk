@@ -136,7 +136,7 @@ fmt.Println(signed["signature"], verified.SigningHash(), verified.ResolvedKey().
 
 `SigningKey` est le seul adaptateur de signature. `KeyResolver` reçoit une
 `KeyResolutionRequest` et doit renvoyer un `KeyRegistrySnapshot` dont la complétude
-`KeyRegistryOrganizationWide` est explicite ; les snapshots de Registry partiels ou sans
+`KeyRegistryOrganizationWide` est explicite ; les snapshots partiels de l’Agent Registry ou sans
 déclaration de complétude échouent de manière fermée. Les erreurs n’exposent aux peers qu’un
 `WireCode()` stable, tandis que `ProtectedDiagnostic()` conserve localement la première étape en
 échec et sa raison. Voir l’exemple exécutable avec fixtures de test dans

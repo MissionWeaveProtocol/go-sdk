@@ -130,7 +130,7 @@ fmt.Println(signed["signature"], verified.SigningHash(), verified.ResolvedKey().
 
 `SigningKey` 是唯一的簽名 adapter。`KeyResolver` 接收 `KeyResolutionRequest`，而且必須回傳
 明確宣告 `KeyRegistryOrganizationWide` 完整性的 `KeyRegistrySnapshot`；局部或未宣告完整性的
-Registry snapshot 會 fail closed。驗證錯誤對 peer 僅公開穩定的 `WireCode()`，而
+Agent Registry snapshot 會 fail closed。驗證錯誤對 peer 僅公開穩定的 `WireCode()`，而
 `ProtectedDiagnostic()` 會為本機維運保留第一個失敗階段與原因。可執行的測試 fixture 範例見
 [`examples/sign`](examples/sign)。
 

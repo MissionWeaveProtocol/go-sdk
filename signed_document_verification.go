@@ -20,7 +20,7 @@ const (
 	KeyRegistryOrganizationWide KeyRegistryCompleteness = "organization-wide"
 )
 
-// KeyRegistrySnapshot is raw Registry evidence plus an explicit completeness assertion. The
+// KeyRegistrySnapshot is raw Agent Registry evidence plus an explicit completeness assertion. The
 // codec fails closed unless Completeness is KeyRegistryOrganizationWide.
 type KeyRegistrySnapshot struct {
 	Completeness  KeyRegistryCompleteness
@@ -58,7 +58,7 @@ type KeyResolutionRequest struct {
 }
 
 // KeyResolver is the sole application adapter used during Signed Document verification. It must
-// return a complete organization Registry snapshot/history; the codec, not the adapter, validates
+// return a complete organization-wide Agent Registry snapshot/history; the codec, not the adapter, validates
 // and resolves that Registry.
 type KeyResolver interface {
 	Resolve(request KeyResolutionRequest) (KeyRegistrySnapshot, error)
@@ -153,7 +153,7 @@ func (signature SignatureEvidence) Value() string { return signature.value }
 // Bytes returns a copy of the decoded 64-byte Ed25519 signature.
 func (signature SignatureEvidence) Bytes() []byte { return append([]byte(nil), signature.bytes...) }
 
-// ResolvedKeyEvidence is immutable evidence selected from a fully validated Registry snapshot.
+// ResolvedKeyEvidence is immutable evidence selected from a fully validated Agent Registry snapshot.
 type ResolvedKeyEvidence struct {
 	organizationID string
 	keyID          string
@@ -279,7 +279,7 @@ func (verified *VerifiedSignedDocument) Signature() SignatureEvidence {
 	return verified.signatureEvidence.clone()
 }
 
-// ResolvedKey returns an immutable copy of resolved Registry evidence.
+// ResolvedKey returns an immutable copy of resolved Agent Registry evidence.
 func (verified *VerifiedSignedDocument) ResolvedKey() ResolvedKeyEvidence {
 	return verified.resolvedKey.clone()
 }

@@ -134,7 +134,7 @@ fmt.Println(signed["signature"], verified.SigningHash(), verified.ResolvedKey().
 
 `SigningKey` is the only signing adapter. `KeyResolver` receives a `KeyResolutionRequest` and must
 return a `KeyRegistrySnapshot` whose completeness is explicitly
-`KeyRegistryOrganizationWide`; partial or unspecified Registry snapshots fail closed. Verification
+`KeyRegistryOrganizationWide`; partial or unspecified Agent Registry snapshots fail closed. Verification
 errors expose only a stable `WireCode()` to peers, while `ProtectedDiagnostic()` retains the first
 failing stage and reason for local operators. See the runnable test-fixture example in
 [`examples/sign`](examples/sign).
