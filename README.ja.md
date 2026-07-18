@@ -41,15 +41,15 @@ go get github.com/missionweaveprotocol/go-sdk@latest
 
 ## 含まれる機能
 
-- バイト単位で同一の embedded protocol pin、21 個の Draft 2020-12 schema、52 個の conformance vector；
-- schema、conformance、結合 bundle digest の検証；
-- 重複 member を再帰的に拒否する厳格な UTF-8 JSON parser；
-- format assertion と ECMAScript 互換 pattern を備えたオフライン `$id` schema 解決；
-- embedded または呼び出し側が提供する `fs.FS` を使う `SchemaCatalog`；
-- 52-vector conformance runner と `missionweaveprotocol-conformance` コマンド；
-- RFC 8785 JSON canonicalization と `sha256:` content identifier；
-- padding なし base64url を使う Ed25519 署名と検証；
-- トップレベルの `signature` member だけを除外する署名 payload；
+- バイト単位で同一の embedded protocol pin、21 個の Draft 2020-12 schema、52 個の conformance vector。
+- schema、conformance、結合 bundle digest の検証。
+- 重複 member を再帰的に拒否する厳格な UTF-8 JSON parser。
+- format assertion と ECMAScript 互換 pattern を備えたオフライン `$id` schema 解決。
+- embedded または呼び出し側が提供する `fs.FS` を使う `SchemaCatalog`。
+- 52-vector conformance runner と `missionweaveprotocol-conformance` コマンド。
+- RFC 8785 JSON canonicalization と `sha256:` content identifier。
+- padding なし base64url を使う Ed25519 署名と検証。
+- トップレベルの `signature` member だけを除外する署名 payload。
 - WebSocket frame 向けの generic、schema-validating、canonical `FrameCodec`。
 
 ## Embedded protocol bundle の検証

@@ -82,7 +82,7 @@ if err := catalog.Validate("command.schema.json", commandJSON); err != nil {
 oder release bundle bereit. Alle schemas werden vor dem Kompilieren über `$id` registriert;
 unaufgelöste Referenzen greifen niemals auf das Netzwerk zurück.
 
-## WebSocket frames codieren und decodieren
+## WebSocket-Frames kodieren und dekodieren
 
 ```go
 codec, err := missionweaveprotocol.NewFrameCodec()
