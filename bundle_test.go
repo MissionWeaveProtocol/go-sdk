@@ -38,8 +38,8 @@ func TestEmbeddedProtocolBundleMatchesPin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if JSONFiles != 75 { // 74 protocol artifacts plus PROTOCOL_PIN.json.
-		t.Fatalf("expected 75 embedded JSON files, got %d", JSONFiles)
+	if JSONFiles != 79 { // 78 protocol artifacts plus PROTOCOL_PIN.json.
+		t.Fatalf("expected 79 embedded JSON files, got %d", JSONFiles)
 	}
 }
 
@@ -64,7 +64,7 @@ func TestEmbeddedCryptographyBundleMatchesPin(t *testing.T) {
 	if cryptography.ManifestVersion != 1 || cryptography.ArtifactCount != 94 || cryptography.CaseCount != 22 || cryptography.EvaluationCount != 58 {
 		t.Fatalf("unexpected cryptography counts: %+v", cryptography)
 	}
-	if cryptography.ArtifactDigest != "sha256:487e18c1ea7053432953f28d1496ae4fdb8e9d42c2eeb8e94f9b21f8cc2596a2" {
+	if cryptography.ArtifactDigest != "sha256:159a4900987723537d0d110ec6724c5e1ee52854951a9c69278386d751baae08" {
 		t.Fatalf("unexpected cryptography artifact digest %q", cryptography.ArtifactDigest)
 	}
 	for _, name := range []string{

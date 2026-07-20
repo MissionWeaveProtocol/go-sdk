@@ -41,12 +41,12 @@ go get github.com/missionweaveprotocol/go-sdk@latest
 
 ## 含まれる機能
 
-- バイト単位で同一の組み込みプロトコルピン、21 個の Draft 2020-12 Schema、52 個の適合性ベクトル。
+- バイト単位で同一の組み込みプロトコルピン、21 個の Draft 2020-12 Schema、56 個の適合性ベクトル。
 - Schema、適合性ベクトル、および結合バンドルのダイジェスト検証。
 - 重複メンバーを再帰的に拒否する厳格な UTF-8 JSON パーサー。
 - 形式アサーションと ECMAScript 互換パターンを備えたオフライン `$id` Schema 解決。
 - 組み込みまたは呼び出し側が提供する `fs.FS` を使う `SchemaCatalog`。
-- 52 ベクトルの適合性ランナーと `missionweaveprotocol-conformance` コマンド。
+- 56 ベクトルの適合性ランナーと `missionweaveprotocol-conformance` コマンド。
 - RFC 8785 JSON 正規化と `sha256:` コンテンツ識別子。
 - パディングなし base64url を使う Ed25519 署名と検証。
 - トップレベルの `signature` メンバーだけを除外する署名ペイロード。
@@ -155,7 +155,7 @@ go run github.com/missionweaveprotocol/go-sdk/cmd/missionweaveprotocol-conforman
 go run ./cmd/missionweaveprotocol-conformance --root ../missionweaveprotocol
 ```
 
-成功時は `52/52 conformance vectors passed` と表示されます。妥当性の不一致、不正な
+成功時は `56/56 conformance vectors passed` と表示されます。妥当性の不一致、不正な
 ベクトル、リソース不足、Schema のコンパイルエラーの場合は非ゼロで終了します。
 
 ## サンプルと開発
