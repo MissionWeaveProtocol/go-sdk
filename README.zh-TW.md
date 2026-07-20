@@ -39,12 +39,12 @@ go get github.com/missionweaveprotocol/go-sdk@latest
 
 ## 已包含的能力
 
-- 依原始位元組嵌入的協定鎖定資訊、21 個 Draft 2020-12 Schema 和 52 個符合性向量；
+- 依原始位元組嵌入的協定鎖定資訊、21 個 Draft 2020-12 Schema 和 56 個符合性向量；
 - 驗證 Schema、符合性向量和組合協定包的摘要；
 - 嚴格的 UTF-8 JSON 解析，並遞迴拒絕重複成員；
 - 透過 `$id` 離線解析 Schema，並支援格式斷言和 ECMAScript 相容模式；
 - 使用內建或呼叫端提供的 `fs.FS` 的 `SchemaCatalog`；
-- 包含 52 個向量的符合性執行器和 `missionweaveprotocol-conformance` 指令；
+- 包含 56 個向量的符合性執行器和 `missionweaveprotocol-conformance` 指令；
 - RFC 8785 JSON 規範化和 `sha256:` 內容識別子；
 - 使用無填充 base64url 值的 Ed25519 簽署和驗證；
 - 簽署載荷僅排除頂層 `signature` 成員；
@@ -148,7 +148,7 @@ go run github.com/missionweaveprotocol/go-sdk/cmd/missionweaveprotocol-conforman
 go run ./cmd/missionweaveprotocol-conformance --root ../missionweaveprotocol
 ```
 
-成功時會回報 `52/52 conformance vectors passed`。若有效性不相符、向量格式錯誤、
+成功時會回報 `56/56 conformance vectors passed`。若有效性不相符、向量格式錯誤、
 資源缺失或 Schema 編譯失敗，指令將以非零狀態結束。
 
 ## 範例和開發
